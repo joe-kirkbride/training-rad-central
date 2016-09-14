@@ -12,6 +12,15 @@ def toolMsBuild = "<path-to-msbuild>"
 def toolMsDeploy = "<path-to-msdeploy>"
 def toolSonarQube = "<path-to-sonarqube>"
 
+def buildProcess(extension, target) {
+  dir.eachFileRecurse {
+    file ->
+      if (file.name.indexOf("${extension}") != -1) {
+        bat "${msbuild} ${file.name} ${target}"
+      }
+  }
+}
+
 stage("import") {
   node() {
     try {
@@ -28,6 +37,7 @@ stage("import") {
 stage("analyze") {
   node() {
     try {
+      buildProcess(".sln", "/t:clean;build")
       slackSend channel: slackChannel, color: slackColorPass, message: slackMessagePass
     } catch(error) {
       slackSend channel: slackChannel, color: slackColorFail, message: slackMessageFail
