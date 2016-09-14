@@ -2,15 +2,15 @@
 
 def gitBranch = "**"
 def gitUrl = "https://github.com/<account-name>/<repository-name>.git"
-def slackChannel = ""
+def slackChannel = "#<channel>"
 def slackColorFail = "#AA0000"
 def slackColorPass = "#00AA00"
 def slackMessageFail = "FAILURE"
 def slackMessagePass = "SUCCESS"
-def toolCurl = ""
-def toolMsBuild = ""
-def toolMsDeploy = ""
-def toolSonarQube = ""
+def toolCurl = "<path-to-curl>"
+def toolMsBuild = "<path-to-msbuild>"
+def toolMsDeploy = "<path-to-msdeploy>"
+def toolSonarQube = "<path-to-sonarqube>"
 
 stage("import") {
   node() {
