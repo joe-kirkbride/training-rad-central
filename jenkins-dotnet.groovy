@@ -39,6 +39,7 @@ stage("analyze") {
   node() {
     try {
       buildProcess(".sln", "/t:clean;build")
+      buildProcess(".csproj", "/t:package")
       slackSend channel: slackChannel, color: slackColorPass, message: slackMessagePass
     } catch(error) {
       slackSend channel: slackChannel, color: slackColorFail, message: slackMessageFail
