@@ -7,6 +7,10 @@ def slackColorFail = "#AA0000"
 def slackColorPass = "#00AA00"
 def slackMessageFail = "FAILURE"
 def slackMessagePass = "SUCCESS"
+def toolCurl = ""
+def toolMsBuild = ""
+def toolMsDeploy = ""
+def toolSonarQube = ""
 
 stage("import") {
   node() {
