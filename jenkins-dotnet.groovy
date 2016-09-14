@@ -5,8 +5,8 @@ def gitUrl = "https://github.com/<account-name>/<repository-name>.git"
 def slackChannel = ""
 def slackColorFail = "#AA0000"
 def slackColorPass = "#00AA00"
-def slackMessageFail = ""
-def slackMessagePass = ""
+def slackMessageFail = "FAILURE"
+def slackMessagePass = "SUCCESS"
 
 stage("import") {
   node() {
