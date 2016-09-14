@@ -3,8 +3,8 @@
 def gitBranch = "**"
 def gitUrl = "https://github.com/<account-name>/<repository-name>.git"
 def slackChannel = ""
-def slackColorFail = ""
-def slackColorPass = ""
+def slackColorFail = "#AA0000"
+def slackColorPass = "#00AA00"
 def slackMessageFail = ""
 def slackMessagePass = ""
 
