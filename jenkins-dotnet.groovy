@@ -10,13 +10,15 @@ def slackMessagePass = "SUCCESS"
 def toolCurl = "<path-to-curl>"
 def toolMsBuild = "<path-to-msbuild>"
 def toolMsDeploy = "<path-to-msdeploy>"
+def toolNuget = "<path-to-nuget>"
 def toolSonarQube = "<path-to-sonarqube>"
 
 def buildProcess(extension, target) {
   dir.eachFileRecurse {
     file ->
       if (file.name.indexOf("${extension}") != -1) {
-        bat "${msbuild} ${file.name} ${target}"
+        bat "${toolNuget}"
+        bat "${toolMsBuild} ${file.name} ${target}"
       }
   }
 }
@@ -25,7 +27,6 @@ stage("import") {
   node() {
     try {
       git branch: gitBranch, url: gitUrl
-
       slackSend channel: slackChannel, color: slackColorPass, message: slackMessagePass
     } catch(error) {
       slackSend channel: slackChannel, color: slackColorFail, message: slackMessageFail
