@@ -23,11 +23,24 @@ def buildProcess(extension, target) {
   }
 }
 
+def slackNotify(slackChannel, slackColor, slackMessage) {
+  def author = bat returnStdout: true, script: "git log -1 --pretty=%%an"
+  def branch = bat returnStdout: true, script: "git rev-parse --abbrev-ref=strict head"
+  def commit = bat returnStdout: true, script: "git log -1 --pretty=\"%%s - %%h\""
+  
+  author = (author.split("\n"))[2]
+  branch = (branch.split("\n"))[2]
+  commit = (commit.split("\n"))[2]
+  message = "${author} - ${branch} - ${commit}"
+  
+  slackSend channel: slackChannel, color: slackColor, message: "${slackMessage}\n${message}"
+}
+
 stage("import") {
   node() {
     try {
       git branch: gitBranch, url: gitUrl
-      slackSend channel: slackChannel, color: slackColorPass, message: slackMessagePass
+      slackNotify(slackChannel, slackColorPass, slackMessagePass)
     } catch(error) {
       slackSend channel: slackChannel, color: slackColorFail, message: slackMessageFail
       throw error
@@ -40,7 +53,7 @@ stage("analyze") {
     try {
       buildProcess(".sln", "/t:clean;build")
       buildProcess(".csproj", "/t:package")
-      slackSend channel: slackChannel, color: slackColorPass, message: slackMessagePass
+      slackNotify(slackChannel, slackColorPass, slackMessagePass)
     } catch(error) {
       slackSend channel: slackChannel, color: slackColorFail, message: slackMessageFail
       throw error
@@ -51,7 +64,7 @@ stage("analyze") {
 stage("test") {
   node() {
     try {
-      slackSend channel: slackChannel, color: slackColorPass, message: slackMessagePass
+      slackNotify(slackChannel, slackColorPass, slackMessagePass)
     } catch(error) {
       slackSend channel: slackChannel, color: slackColorFail, message: slackMessageFail
       throw error
@@ -62,7 +75,7 @@ stage("test") {
 stage("deploy") {
   node() {
     try {
-      slackSend channel: slackChannel, color: slackColorPass, message: slackMessagePass
+      slackNotify(slackChannel, slackColorPass, slackMessagePass)
     } catch(error) {
       slackSend channel: slackChannel, color: slackColorFail, message: slackMessageFail
       throw error
@@ -73,7 +86,7 @@ stage("deploy") {
 stage("export") {
   node() {
     try {
-      slackSend channel: slackChannel, color: slackColorPass, message: slackMessagePass
+      slackNotify(slackChannel, slackColorPass, slackMessagePass)
     } catch(error) {
       slackSend channel: slackChannel, color: slackColorFail, message: slackMessageFail
       throw error
