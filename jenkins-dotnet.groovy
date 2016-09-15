@@ -17,7 +17,7 @@ def buildProcess(extension, target) {
   dir.eachFileRecurse {
     file ->
       if (file.name.indexOf("${extension}") != -1) {
-        bat "${toolNuget}"
+        bat "${toolNuget} restore"
         bat "${toolMsBuild} ${file.name} ${target}"
       }
   }
