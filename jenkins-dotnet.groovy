@@ -1,12 +1,10 @@
 // jenkins pipeline :: dotnet
 
+def buildColor = ["#AA0000", "#00AA00"]
+def buildFlag = ["FAIL", "PASS"]
 def gitBranch = "**"
 def gitUrl = "https://github.com/<account-name>/<repository-name>.git"
 def slackChannel = "#<channel>"
-def slackColorFail = "#AA0000"
-def slackColorPass = "#00AA00"
-def slackMessageFail = "FAIL"
-def slackMessagePass = "PASS"
 def toolCurl = "<path-to-curl>"
 def toolMsBuild = "<path-to-msbuild>"
 def toolMsDeploy = "<path-to-msdeploy>"
@@ -23,7 +21,7 @@ def buildProcess(extension, target) {
   }
 }
 
-def slackNotify(slackChannel, slackColor, slackMessage) {
+def slackNotify(slackChannel, buildColor, buildStage, buildFlag) {
   def author = bat returnStdout: true, script: "git log -1 --pretty=%%an"
   def branch = bat returnStdout: true, script: "git rev-parse --abbrev-ref=strict head"
   def commit = bat returnStdout: true, script: "git log -1 --pretty=\"%%s - %%h\""
@@ -31,64 +29,66 @@ def slackNotify(slackChannel, slackColor, slackMessage) {
   author = (author.split("\n"))[2]
   branch = (branch.split("\n"))[2]
   commit = (commit.split("\n"))[2]
+
   message = "${author} - ${branch} - ${commit}"
+  slackMessage = "${env.JOB_NAME} - ${env.BUILD_ID} - ${buildStage} - ${buildFlag}"
   
-  slackSend channel: slackChannel, color: slackColor, message: "${slackMessage}\n${message}"
+  slackSend channel: slackChannel, color: buildColor, message: "${slackMessage}\n${message}"
 }
 
-stage("import") {
+stage("IMPORT") {
   node() {
     try {
       git branch: gitBranch, url: gitUrl
-      slackNotify(slackChannel, slackColorPass, slackMessagePass)
+      slackNotify(slackChannel, buildColor[1], "IMPORT", buildFlag[1])
     } catch(error) {
-      slackSend channel: slackChannel, color: slackColorFail, message: slackMessageFail
+      slackNotify(slackChannel, buildColor[0], "IMPORT", buildFlag[0])
       throw error
     }
   }
 }
 
-stage("analyze") {
+stage("ANALYZE") {
   node() {
     try {
       buildProcess(".sln", "/t:clean;build")
       buildProcess(".csproj", "/t:package")
-      slackNotify(slackChannel, slackColorPass, slackMessagePass)
+      slackNotify(slackChannel, buildColor[1], "ANALYZE", buildFlag[1])
     } catch(error) {
-      slackSend channel: slackChannel, color: slackColorFail, message: slackMessageFail
+      slackNotify(slackChannel, buildColor[0], "ANALYZE", buildFlag[0])
       throw error
     }
   }
 }
 
-stage("test") {
+stage("TEST") {
   node() {
     try {
-      slackNotify(slackChannel, slackColorPass, slackMessagePass)
+      slackNotify(slackChannel, buildColor[1], "TEST", buildFlag[1])
     } catch(error) {
-      slackSend channel: slackChannel, color: slackColorFail, message: slackMessageFail
+      slackNotify(slackChannel, buildColor[0], "TEST", buildFlag[0])
       throw error
     }
   }
 }
 
-stage("deploy") {
+stage("DEPLOY") {
   node() {
     try {
-      slackNotify(slackChannel, slackColorPass, slackMessagePass)
+      slackNotify(slackChannel, buildColor[1], "DEPLOY", buildFlag[1])
     } catch(error) {
-      slackSend channel: slackChannel, color: slackColorFail, message: slackMessageFail
+      slackNotify(slackChannel, buildColor[0], "DEPLOY", buildFlag[0])
       throw error
     }
   }
 }
 
-stage("export") {
+stage("EXPORT") {
   node() {
     try {
-      slackNotify(slackChannel, slackColorPass, slackMessagePass)
+      slackNotify(slackChannel, buildColor[1], "EXPORT", buildFlag[1])
     } catch(error) {
-      slackSend channel: slackChannel, color: slackColorFail, message: slackMessageFail
+      slackNotify(slackChannel, buildColor[0], "EXPORT", buildFlag[0])
       throw error
     }
   }
