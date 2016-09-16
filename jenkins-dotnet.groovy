@@ -6,18 +6,22 @@ def gitBranch = "**"
 def gitUrl = "https://github.com/<account-name>/<repository-name>.git"
 def slackChannel = "#<channel>"
 def toolCurl = "<path-to-curl>"
-def toolMsBuild = "<path-to-msbuild>"
 def toolMsDeploy = "<path-to-msdeploy>"
-def toolNuget = "<path-to-nuget>"
 def toolSonarQube = "<path-to-sonarqube>"
 
-def buildProcess(extension, target) {
-  dir.eachFileRecurse {
-    file ->
-      if (file.name.indexOf("${extension}") != -1) {
-        bat "${toolNuget} restore"
-        bat "${toolMsBuild} ${file.name} ${target}"
-      }
+def dotnetBuild(extension, target) {
+  def files = findFiles glob: "**/${extension}"
+  def path = ""
+  def toolMsBuild = "<path-to-msbuild>"
+  def toolNuget = "<path-to-nuget>"
+
+  for (file in files.toList()) {
+    path = file.path.replace(file.name, "")
+
+    dir("${path}") {
+      bat "${toolNuget} restore"
+      bat "${toolMsBuild} ${file.name} ${target}"
+    }
   }
 }
 
@@ -51,8 +55,8 @@ stage("IMPORT") {
 stage("ANALYZE") {
   node() {
     try {
-      buildProcess(".sln", "/t:clean;build")
-      buildProcess(".csproj", "/t:package")
+      dotnetBuild(".sln", "/t:clean;build")
+      dotnetBuild(".csproj", "/t:package")
       slackNotify(slackChannel, buildColor[1], "ANALYZE", buildFlag[1])
     } catch(error) {
       slackNotify(slackChannel, buildColor[0], "ANALYZE", buildFlag[0])
