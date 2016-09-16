@@ -56,7 +56,6 @@ stage("ANALYZE") {
   node() {
     try {
       dotnetBuild("*.sln", "/t:rebuild")
-      dotnetBuild("*.csproj", "/t:package")
       slackNotify(slackChannel, buildColor[1], "ANALYZE", buildFlag[1])
     } catch(error) {
       slackNotify(slackChannel, buildColor[0], "ANALYZE", buildFlag[0])
@@ -79,6 +78,7 @@ stage("TEST") {
 stage("DEPLOY") {
   node() {
     try {
+      dotnetBuild("*.csproj", "/t:package")
       slackNotify(slackChannel, buildColor[1], "DEPLOY", buildFlag[1])
     } catch(error) {
       slackNotify(slackChannel, buildColor[0], "DEPLOY", buildFlag[0])
