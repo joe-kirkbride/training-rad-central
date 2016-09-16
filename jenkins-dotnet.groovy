@@ -29,11 +29,11 @@ def slackNotify(slackChannel, buildColor, buildStage, buildFlag) {
   author = (author.split("\n"))[2]
   branch = (branch.split("\n"))[2]
   commit = (commit.split("\n"))[2]
-
-  message = "${author} - ${branch} - ${commit}"
-  slackMessage = "${env.JOB_NAME} - ${env.BUILD_ID} - ${buildStage} - ${buildFlag}"
   
-  slackSend channel: slackChannel, color: buildColor, message: "${slackMessage}\n${message}"
+  messageHead = "${env.JOB_NAME} - ${env.BUILD_ID} - ${buildStage} - ${buildFlag}"
+  messageBody = "${author} - ${branch} - ${commit}"
+  
+  slackSend channel: slackChannel, color: buildColor, message: "${messageHead}\n${messageBody}"
 }
 
 stage("IMPORT") {
