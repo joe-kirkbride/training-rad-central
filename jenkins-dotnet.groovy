@@ -55,8 +55,8 @@ stage("IMPORT") {
 stage("ANALYZE") {
   node() {
     try {
-      dotnetBuild(".sln", "/t:clean;build")
-      dotnetBuild(".csproj", "/t:package")
+      dotnetBuild("*.sln", "/t:rebuild")
+      dotnetBuild("*.csproj", "/t:package")
       slackNotify(slackChannel, buildColor[1], "ANALYZE", buildFlag[1])
     } catch(error) {
       slackNotify(slackChannel, buildColor[0], "ANALYZE", buildFlag[0])
