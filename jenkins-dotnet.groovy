@@ -30,7 +30,7 @@ def slackNotify(slackChannel, buildColor, buildStage, buildFlag) {
   branch = (branch.split("\n"))[2]
   commit = (commit.split("\n"))[2]
   
-  messageHead = "${env.JOB_NAME} - ${env.BUILD_ID} - ${buildStage} - ${buildFlag}"
+  messageHead = "${env.JOB_NAME} - ${env.BUILD_NUMBER} - ${buildStage} - ${buildFlag}"
   messageBody = "${author} - ${branch} - ${commit}"
   
   slackSend channel: slackChannel, color: buildColor, message: "${messageHead}\n${messageBody}"
