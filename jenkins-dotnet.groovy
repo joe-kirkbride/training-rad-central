@@ -1,7 +1,7 @@
 // jenkins pipeline :: dotnet
 
-def buildColor = ["#AA0000", "#00AA00"]
-def buildFlag = ["FAIL", "PASS"]
+def buildColor = [green: "#00AA00", red: "#AA0000"]
+def buildFlag = [failing: "FAIL", passing: "PASS"]
 def gitBranch = "**"
 def gitUrl = "https://github.com/<account-name>/<repository-name>.git"
 def slackChannel = "#<channel>"
@@ -44,9 +44,9 @@ stage("IMPORT") {
   node() {
     try {
       git branch: gitBranch, url: gitUrl
-      slackNotify(slackChannel, buildColor[1], "IMPORT", buildFlag[1])
+      slackNotify(slackChannel, buildColor.green, "IMPORT", buildFlag.passing)
     } catch(error) {
-      slackNotify(slackChannel, buildColor[0], "IMPORT", buildFlag[0])
+      slackNotify(slackChannel, buildColor.red, "IMPORT", buildFlag.failing)
       throw error
     }
   }
@@ -56,9 +56,9 @@ stage("ANALYZE") {
   node() {
     try {
       dotnetBuild("*.sln", "/t:rebuild")
-      slackNotify(slackChannel, buildColor[1], "ANALYZE", buildFlag[1])
+      slackNotify(slackChannel, buildColor.green, "ANALYZE", buildFlag.passing)
     } catch(error) {
-      slackNotify(slackChannel, buildColor[0], "ANALYZE", buildFlag[0])
+      slackNotify(slackChannel, buildColor.red, "ANALYZE", buildFlag.failing)
       throw error
     }
   }
@@ -67,9 +67,9 @@ stage("ANALYZE") {
 stage("TEST") {
   node() {
     try {
-      slackNotify(slackChannel, buildColor[1], "TEST", buildFlag[1])
+      slackNotify(slackChannel, buildColor.green, "TEST", buildFlag.passing)
     } catch(error) {
-      slackNotify(slackChannel, buildColor[0], "TEST", buildFlag[0])
+      slackNotify(slackChannel, buildColor.red, "TEST", buildFla.failing)
       throw error
     }
   }
@@ -79,9 +79,9 @@ stage("DEPLOY") {
   node() {
     try {
       dotnetBuild("*.csproj", "/t:package")
-      slackNotify(slackChannel, buildColor[1], "DEPLOY", buildFlag[1])
+      slackNotify(slackChannel, buildColor.green, "DEPLOY", buildFlag.passing)
     } catch(error) {
-      slackNotify(slackChannel, buildColor[0], "DEPLOY", buildFlag[0])
+      slackNotify(slackChannel, buildColor.red, "DEPLOY", buildFlag.failing)
       throw error
     }
   }
@@ -90,9 +90,9 @@ stage("DEPLOY") {
 stage("EXPORT") {
   node() {
     try {
-      slackNotify(slackChannel, buildColor[1], "EXPORT", buildFlag[1])
+      slackNotify(slackChannel, buildColor.green, "EXPORT", buildFlag.passing)
     } catch(error) {
-      slackNotify(slackChannel, buildColor[0], "EXPORT", buildFlag[0])
+      slackNotify(slackChannel, buildColor.red, "EXPORT", buildFlag.failing)
       throw error
     }
   }
