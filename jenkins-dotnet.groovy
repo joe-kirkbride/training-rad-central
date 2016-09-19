@@ -25,7 +25,7 @@ def dotnetBuild(extension, target) {
   }
 }
 
-def slackNotify(slackChannel, buildColor, buildStage, buildFlag) {
+def slackNotify(buildChannel, buildColor, buildStage, buildFlag) {
   def author = bat returnStdout: true, script: "git log -1 --pretty=%%an"
   def branch = bat returnStdout: true, script: "git rev-parse --abbrev-ref=strict head"
   def commit = bat returnStdout: true, script: "git log -1 --pretty=\"%%s - %%h\""
@@ -37,7 +37,7 @@ def slackNotify(slackChannel, buildColor, buildStage, buildFlag) {
   messageHead = "${env.JOB_NAME} - ${env.BUILD_NUMBER} - ${buildStage} - ${buildFlag}"
   messageBody = "${author} - ${branch} - ${commit}"
   
-  slackSend channel: slackChannel, color: buildColor, message: "${messageHead}\n${messageBody}"
+  slackSend channel: buildChannel, color: buildColor, message: "${messageHead}\n${messageBody}"
 }
 
 stage("IMPORT") {
