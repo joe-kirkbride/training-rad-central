@@ -9,7 +9,7 @@ def toolCurl = "<path-to-curl>"
 def toolMsDeploy = "<path-to-msdeploy>"
 def toolSonarQube = "<path-to-sonarqube>"
 
-def dotnetBuild(extension, target) {
+def dotnetBuild(extension, target, restore = false) {
   def files = findFiles glob: "**/${extension}"
   def path = ""
   def toolMsBuild = "<path-to-msbuild>"
@@ -19,7 +19,10 @@ def dotnetBuild(extension, target) {
     path = file.path.replace(file.name, "")
 
     dir("${path}") {
-      bat "${toolNuget} restore"
+      if (restore) {
+        bat "${toolNuget} restore"
+      }
+      
       bat "${toolMsBuild} ${file.name} ${target}"
     }
   }
@@ -55,7 +58,7 @@ stage("IMPORT") {
 stage("ANALYZE") {
   node() {
     try {
-      dotnetBuild("*.sln", "/t:rebuild")
+      dotnetBuild("*.sln", "/t:rebuild", true)
       slackNotify(slackChannel, buildColor.green, "ANALYZE", buildFlag.passing)
     } catch(error) {
       slackNotify(slackChannel, buildColor.red, "ANALYZE", buildFlag.failing)
