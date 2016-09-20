@@ -4,27 +4,27 @@ def buildColor = [green: "#00AA00", red: "#AA0000"]
 def buildFlag = [failing: "FAIL", passing: "PASS"]
 def gitBranch = "**"
 def gitUrl = "https://github.com/<account-name>/<repository-name>.git"
+def projectKey = ""
 def slackChannel = "#<channel>"
 def toolMsBuild = "<path-to-msbuild>"
 def toolMsDeploy = "<path-to-msdeploy>"
 
-def dotnetAnalyze() {
+def dotnetAnalyze(projectKey) {
   def analysisReport = ""
-  def projectUrl = "<path-to-analysis>"
+  def projectUrl = "<path-to-sonarqube>/api/qualitygates/project_status?projectKey=${projectKey}"
   def toolCurl = "<path-to-curl>"
 
-  bat "${toolCurl} ${projectUrl} -o analysis-report.json"
-  analysisReport = readFile "analysis-report.json"
+  bat "${toolCurl} ${projectUrl} -o analysis-report-${projectKey}.json"
+  analysisReport = readFile "analysis-report-${projectKey}.json"
   
   if (analysisReport.indexOf("ERROR") != -1 && analysisReport.indexOf("ERROR") <= 35) {
     error "the sonarqube code quality failed."
   }
 }
 
-def dotnetBuild(toolMsBuild, extension) {
+def dotnetBuild(projectKey, toolMsBuild, extension) {
   def files = findFiles glob: "**/${extension}"
   def path = ""
-  def projectKey = ""
   def projectName = ""
   def projectVersion = ""
   def toolNuget = "<path-to-nuget>"
@@ -85,7 +85,7 @@ stage("IMPORT") {
 stage("ANALYZE") {
   node() {
     try {
-      dotnetBuild(toolMsBuild, "*.sln")
+      dotnetBuild(projectKey, toolMsBuild, "*.sln")
       sleep time: 10, units: "SECONDS"
       dotnetAnalyze()
       slackNotify(slackChannel, buildColor.green, "ANALYZE", buildFlag.passing)
