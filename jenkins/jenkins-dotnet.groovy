@@ -4,6 +4,9 @@ def buildColor = [green: "#00AA00", red: "#AA0000"]
 def buildFlag = [failing: "FAIL", passing: "PASS"]
 def gitBranch = "**"
 def gitUrl = "https://github.com/<account-name>/<repository-name>.git"
+def projectKey = ""
+def projectName = ""
+def projectVersion = ""
 def slackChannel = "#<channel>"
 def toolCurl = "<path-to-curl>"
 def toolMsDeploy = "<path-to-msdeploy>"
@@ -41,6 +44,17 @@ def slackNotify(buildChannel, buildColor, buildStage, buildFlag) {
   messageBody = "${author} - ${branch} - ${commit}"
   
   slackSend channel: buildChannel, color: buildColor, message: "${messageHead}\n${messageBody}"
+}
+
+def sonarqubeScan(action) {
+  switch(action) {
+    case "begin":
+      bat "${toolSonarQube} begin /k:\"${projectKey}\" /n:\"${projectName}\" /v:\"${projectVersion}\""
+    break
+    case "end":
+      bat "${toolSonarQube} end"
+    break
+  }
 }
 
 stage("IMPORT") {
