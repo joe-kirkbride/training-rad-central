@@ -7,7 +7,6 @@ def gitUrl = "https://github.com/<account-name>/<repository-name>.git"
 def projectKey = ""
 def slackChannel = "#<channel>"
 def toolMsBuild = "<path-to-msbuild>"
-def toolMsDeploy = "<path-to-msdeploy>"
 
 def dotnetAnalyze(projectKey) {
   def analysisReport = ""
@@ -39,6 +38,19 @@ def dotnetBuild(projectKey, toolMsBuild, extension) {
       bat "${toolMsBuild} ${file.name} /t:rebuild"
       bat "${toolSonarQube} end"
     }
+  }
+}
+
+def dotnetDeploy(publishFolder) {
+  def files = findFiles glob: "**/obj/**/*.zip"
+  def toolMsDeploy = "<path-to-msdeploy>"
+  def fileName = ""
+
+  for (file in files.toList()) {
+    fileName = file.name.replace(".zip", "")
+
+    bat "copy /y ${file.path} .\\${publishFolder}\\"
+    bat "${toolMsDeploy} -verb:sync -source:package=\"${publishFolder}\\${file.name}\" -dest:auto,includeAcls=\"false\" -setParamFile:\"${publishFolder}\\${fileName}.setparameters.xml\" -disableLink:AppPoolExtension -disableLink:ContentExtension -disableLink:CertificateExtension"
   }
 }
 
@@ -111,6 +123,8 @@ stage("DEPLOY") {
   node() {
     try {
       dotnetPackage(toolMsBuild, "*.csproj")
+      sleep time: 10, units: "SECONDS"
+      dotnetDeploy("publishpackages")
       slackNotify(slackChannel, buildColor.green, "DEPLOY", buildFlag.passing)
     } catch(error) {
       slackNotify(slackChannel, buildColor.red, "DEPLOY", buildFlag.failing)
