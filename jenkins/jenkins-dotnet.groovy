@@ -4,29 +4,41 @@ def buildColor = [green: "#00AA00", red: "#AA0000"]
 def buildFlag = [failing: "FAIL", passing: "PASS"]
 def gitBranch = "**"
 def gitUrl = "https://github.com/<account-name>/<repository-name>.git"
-def projectKey = ""
-def projectName = ""
-def projectVersion = ""
 def slackChannel = "#<channel>"
 def toolCurl = "<path-to-curl>"
+def toolMsBuild = "<path-to-msbuild>"
 def toolMsDeploy = "<path-to-msdeploy>"
-def toolSonarQube = "<path-to-sonarqube>"
 
-def dotnetBuild(extension, target, restore = false) {
+def dotnetBuild(toolMsBuild, extension) {
   def files = findFiles glob: "**/${extension}"
   def path = ""
-  def toolMsBuild = "<path-to-msbuild>"
+  def projectKey = ""
+  def projectName = ""
+  def projectVersion = ""
   def toolNuget = "<path-to-nuget>"
+  def toolSonarQube = "<path-to-sonarqube>"
 
   for (file in files.toList()) {
     path = file.path.replace(file.name, "")
 
     dir("${path}") {
-      if (restore) {
-        bat "${toolNuget} restore"
-      }
-      
-      bat "${toolMsBuild} ${file.name} ${target}"
+      bat "${toolSonarQube} begin /k:\"${projectKey}\" /n:\"${projectName}\" /v:\"${projectVersion}\""
+      bat "${toolNuget} restore"
+      bat "${toolMsBuild} ${file.name} /t:rebuild"
+      bat "${toolSonarQube} end"
+    }
+  }
+}
+
+def dotnetPackage(toolMsBuild, extension) {
+  def files = findFiles glob: "**/${extension}"
+  def path = ""
+
+  for (file in files.toList()) {
+    path = file.path.replace(file.name, "")
+
+    dir("${path}") {
+      bat "${toolMsBuild} ${file.name} /t:package"
     }
   }
 }
@@ -46,17 +58,6 @@ def slackNotify(buildChannel, buildColor, buildStage, buildFlag) {
   slackSend channel: buildChannel, color: buildColor, message: "${messageHead}\n${messageBody}"
 }
 
-def sonarqubeScan(action) {
-  switch(action) {
-    case "begin":
-      bat "${toolSonarQube} begin /k:\"${projectKey}\" /n:\"${projectName}\" /v:\"${projectVersion}\""
-    break
-    case "end":
-      bat "${toolSonarQube} end"
-    break
-  }
-}
-
 stage("IMPORT") {
   node() {
     try {
@@ -72,7 +73,7 @@ stage("IMPORT") {
 stage("ANALYZE") {
   node() {
     try {
-      dotnetBuild("*.sln", "/t:rebuild", true)
+      dotnetBuild(toolMsBuild, "*.sln")
       slackNotify(slackChannel, buildColor.green, "ANALYZE", buildFlag.passing)
     } catch(error) {
       slackNotify(slackChannel, buildColor.red, "ANALYZE", buildFlag.failing)
@@ -95,7 +96,7 @@ stage("TEST") {
 stage("DEPLOY") {
   node() {
     try {
-      dotnetBuild("*.csproj", "/t:package")
+      dotnetPackage(toolMsBuild, "*.csproj")
       slackNotify(slackChannel, buildColor.green, "DEPLOY", buildFlag.passing)
     } catch(error) {
       slackNotify(slackChannel, buildColor.red, "DEPLOY", buildFlag.failing)
