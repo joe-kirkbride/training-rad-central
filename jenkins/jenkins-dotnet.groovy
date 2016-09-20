@@ -5,9 +5,21 @@ def buildFlag = [failing: "FAIL", passing: "PASS"]
 def gitBranch = "**"
 def gitUrl = "https://github.com/<account-name>/<repository-name>.git"
 def slackChannel = "#<channel>"
-def toolCurl = "<path-to-curl>"
 def toolMsBuild = "<path-to-msbuild>"
 def toolMsDeploy = "<path-to-msdeploy>"
+
+def dotnetAnalyze() {
+  def analysisReport = ""
+  def projectUrl = "<path-to-analysis>"
+  def toolCurl = "<path-to-curl>"
+
+  bat "${toolCurl} ${projectUrl} -o analysis-report.json"
+  analysisReport = readFile "analysis-report.json"
+  
+  if (analysisReport.indexOf("ERROR") != -1 && analysisReport.indexOf("ERROR") <= 35) {
+    error "the sonarqube code quality failed."
+  }
+}
 
 def dotnetBuild(toolMsBuild, extension) {
   def files = findFiles glob: "**/${extension}"
@@ -74,6 +86,8 @@ stage("ANALYZE") {
   node() {
     try {
       dotnetBuild(toolMsBuild, "*.sln")
+      sleep time: 10, units: "SECONDS"
+      dotnetAnalyze()
       slackNotify(slackChannel, buildColor.green, "ANALYZE", buildFlag.passing)
     } catch(error) {
       slackNotify(slackChannel, buildColor.red, "ANALYZE", buildFlag.failing)
