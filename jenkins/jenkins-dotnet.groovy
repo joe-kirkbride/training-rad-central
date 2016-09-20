@@ -87,7 +87,7 @@ stage("ANALYZE") {
     try {
       dotnetBuild(projectKey, toolMsBuild, "*.sln")
       sleep time: 10, units: "SECONDS"
-      dotnetAnalyze()
+      dotnetAnalyze(projectKey)
       slackNotify(slackChannel, buildColor.green, "ANALYZE", buildFlag.passing)
     } catch(error) {
       slackNotify(slackChannel, buildColor.red, "ANALYZE", buildFlag.failing)
