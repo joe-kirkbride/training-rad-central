@@ -98,7 +98,7 @@ stage("ANALYZE") {
   node() {
     try {
       dotnetBuild(projectKey, toolMsBuild, "*.sln")
-      sleep time: 10, units: "SECONDS"
+      sleep time: 5, units: "SECONDS"
       dotnetAnalyze(projectKey)
       slackNotify(slackChannel, buildColor.green, "ANALYZE", buildFlag.passing)
     } catch(error) {
@@ -123,7 +123,7 @@ stage("DEPLOY") {
   node() {
     try {
       dotnetPackage(toolMsBuild, "*.csproj")
-      sleep time: 10, units: "SECONDS"
+      sleep time: 5, units: "SECONDS"
       dotnetDeploy("publishpackages")
       slackNotify(slackChannel, buildColor.green, "DEPLOY", buildFlag.passing)
     } catch(error) {
