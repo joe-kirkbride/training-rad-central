@@ -41,16 +41,21 @@ def dotnetBuild(projectKey, toolMsBuild, extension) {
   }
 }
 
-def dotnetDeploy(publishFolder) {
-  def files = findFiles glob: "**/obj/**/*.zip"
-  def toolMsDeploy = "<path-to-msdeploy>"
-  def fileName = ""
+def dotnetDeploy(publishFolder, publishBranch = "") {
+  def currentbranch = bat returnStdout: true, script: "git rev-parse --abbrev-ref=strict head"
+  currentbranch = (currentBranch.split("\n"))[2]
 
-  for (file in files.toList()) {
-    fileName = file.name.replace(".zip", "")
+  if (publishBranch == "" || publishBranch == currentBranch) {
+    def files = findFiles glob: "**/obj/**/*.zip"
+    def toolMsDeploy = "<path-to-msdeploy>"
+    def fileName = ""
 
-    bat "copy /y ${file.path} .\\${publishFolder}\\"
-    bat "${toolMsDeploy} -verb:sync -source:package=\"${publishFolder}\\${file.name}\" -dest:auto,includeAcls=\"false\" -setParamFile:\"${publishFolder}\\${fileName}.setparameters.xml\" -disableLink:AppPoolExtension -disableLink:ContentExtension -disableLink:CertificateExtension"
+    for (file in files.toList()) {
+      fileName = file.name.replace(".zip", "")
+
+      bat "copy /y ${file.path} .\\${publishFolder}\\"
+      bat "${toolMsDeploy} -verb:sync -source:package=\"${publishFolder}\\${file.name}\" -dest:auto,includeAcls=\"false\" -setParamFile:\"${publishFolder}\\${fileName}.setparameters.xml\" -disableLink:AppPoolExtension -disableLink:ContentExtension -disableLink:CertificateExtension"
+    }
   }
 }
 
