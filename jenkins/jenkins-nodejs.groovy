@@ -25,7 +25,9 @@ stage("IMPORT") {
   node() {
     try {
       git branch: gitBranch, url: gitUrl
+      slackNotify(slackChannel, buildColor.green, "IMPORT", buildFlag.passing)
     } catch(error) {
+      slackNotify(slackChannel, buildColor.red, "IMPORT", buildFlag.failing)
       throw error
     }
   }
@@ -34,7 +36,9 @@ stage("IMPORT") {
 stage("ANALYZE") {
   node() {
     try {
+      slackNotify(slackChannel, buildColor.green, "ANALYZE", buildFlag.passing)
     } catch(error) {
+      slackNotify(slackChannel, buildColor.red, "ANALYZE", buildFlag.failing)
       throw error
     }
   }
@@ -43,7 +47,9 @@ stage("ANALYZE") {
 stage("TEST") {
   node() {
     try {
+      slackNotify(slackChannel, buildColor.green, "TEST", buildFlag.passing)
     } catch(error) {
+      slackNotify(slackChannel, buildColor.red, "TEST", buildFlag.failing)
       throw error
     }
   }
@@ -52,8 +58,9 @@ stage("TEST") {
 stage("DEPLOY") {
   node() {
     try {
-
+      slackNotify(slackChannel, buildColor.green, "DEPLOY", buildFlag.passing)
     } catch(error) {
+      slackNotify(slackChannel, buildColor.red, "DEPLOY", buildFlag.failing)
       throw error
     }
   }
@@ -62,8 +69,9 @@ stage("DEPLOY") {
 stage("EXPORT") {
   node() {
     try {
-
+      slackNotify(slackChannel, buildColor.green, "EXPORT", buildFlag.passing)
     } catch(error) {
+      slackNotify(slackChannel, buildColor.red, "EXPORT", buildFlag.failing)
       throw error
     }
   }
