@@ -5,6 +5,25 @@ def buildFlag = [failing: "FAIL", passing: "PASS"]
 def gitBranch = "**"
 def gitUrl = "https://github.com/<account-name>/<repository-name>.git"
 def slackChannel = "#<channel>"
+def toolNpm = "<path-to-npm>"
+
+def nodejsBuild(projectKey, toolNpm) {
+  def files = findFiles glob: "**/package.json"
+  def path = ""
+  def projectName = ""
+  def projectVersion = ""
+  def toolSonarQube = "<path-to-sonarqube>"
+
+  for (file in files.toList()) {
+    path = file.path.replace(file.name, "")
+
+    dir("${path}") {
+      bat "${toolNpm} install"
+    }
+  }
+
+  bat "${toolSonarQube} -Dsonar.projectKey=${} -Dsonar.projectName=${} -Dsonar.projectVersion=${} -Dsonar.sources=."
+}
 
 def slackNotify(buildChannel, buildColor, buildStage, buildFlag) {
   def author = bat returnStdout: true, script: "git log -1 --pretty=%%an"
