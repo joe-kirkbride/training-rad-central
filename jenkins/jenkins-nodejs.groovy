@@ -4,6 +4,7 @@ def buildColor = [green: "#00AA00", red: "#AA0000"]
 def buildFlag = [failing: "FAIL", passing: "PASS"]
 def gitBranch = "**"
 def gitUrl = "https://github.com/<account-name>/<repository-name>.git"
+def projectKey = ""
 def slackChannel = "#<channel>"
 def toolNpm = "<path-to-npm>"
 
@@ -55,6 +56,7 @@ stage("IMPORT") {
 stage("ANALYZE") {
   node() {
     try {
+      nodejsBuild(projectKey, toolNpm)
       slackNotify(slackChannel, buildColor.green, "ANALYZE", buildFlag.passing)
     } catch(error) {
       slackNotify(slackChannel, buildColor.red, "ANALYZE", buildFlag.failing)
