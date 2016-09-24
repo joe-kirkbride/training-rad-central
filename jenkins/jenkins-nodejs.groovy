@@ -18,12 +18,14 @@ def nodejsBuild(projectKey, toolNpm) {
   for (file in files.toList()) {
     path = file.path.replace(file.name, "")
 
-    dir("${path}") {
-      bat "${toolNpm} install"
+    if (path.indexOf("node_modules") == -1) {
+      dir("${path}") {
+        bat "${toolNpm} install"
+      }
     }
   }
 
-  bat "${toolSonarQube} -Dsonar.projectKey=${} -Dsonar.projectName=${} -Dsonar.projectVersion=${} -Dsonar.sources=."
+  bat "${toolSonarQube} -Dsonar.projectKey=${projectKey} -Dsonar.projectName=${projectName} -Dsonar.projectVersion=${projectVersion} -Dsonar.sources=."
 }
 
 def slackNotify(buildChannel, buildColor, buildStage, buildFlag) {
