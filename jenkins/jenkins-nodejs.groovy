@@ -8,6 +8,19 @@ def projectKey = ""
 def slackChannel = "#<channel>"
 def toolNpm = "<path-to-npm>"
 
+def nodejsAnalyze(projectKey) {
+  def analysisReport = ""
+  def projectUrl = "<path-to-sonarqube>/api/qualitygates/project_status?projectKey=${projectKey}"
+  def toolCurl = "<path-to-curl>"
+
+  bat "${toolCurl} ${projectUrl} -o analysis-report-${projectKey}.json"
+  analysisReport = readFile "analysis-report-${projectKey}.json"
+  
+  if (analysisReport.indexOf("ERROR") != -1 && analysisReport.indexOf("ERROR") <= 35) {
+    error "the sonarqube code quality failed."
+  }
+}
+
 def nodejsBuild(projectKey, toolNpm) {
   def files = findFiles glob: "**/package.json"
   def path = ""
@@ -59,6 +72,7 @@ stage("ANALYZE") {
   node() {
     try {
       nodejsBuild(projectKey, toolNpm)
+      nodejsAnalyze(projectKey)
       slackNotify(slackChannel, buildColor.green, "ANALYZE", buildFlag.passing)
     } catch(error) {
       slackNotify(slackChannel, buildColor.red, "ANALYZE", buildFlag.failing)
